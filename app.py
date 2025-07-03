@@ -35,7 +35,6 @@ job_function_options = sorted(
 # --- Time Entry Form ---
 st.header("Enter Time Worked")
 
-# Use session state to reset form after submission
 if "form_submitted" not in st.session_state:
     st.session_state["form_submitted"] = False
 
@@ -64,19 +63,11 @@ with st.form("entry_form"):
         }
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df)
-        st.session_state["form_submitted"] = True
         st.success("Entry saved!")
+        st.session_state["form_submitted"] = True
 
-# --- Reset form fields after submission ---
+# --- Reset form fields after submission using rerun ---
 if st.session_state.get("form_submitted", False):
-    st.session_state["entry_date"] = date.today()
-    st.session_state["employee"] = ""
-    st.session_state["project"] = ""
-    st.session_state["job1"] = ""
-    st.session_state["hours1"] = 0.0
-    st.session_state["job2"] = ""
-    st.session_state["hours2"] = 0.0
-    st.session_state["travel"] = 0.0
     st.session_state["form_submitted"] = False
     st.experimental_rerun()
 
