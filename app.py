@@ -74,7 +74,7 @@ if not df.empty:
                 'Employee': row['Employee'],
                 'Project/Site': row['Project/Site'],
                 'Job Function': row['Job Function 1'],
-                'Hours Worked': row['Hours Worked 1']
+                'Hours Worked': float(row['Hours Worked 1'])
             })
         if pd.notna(row['Job Function 2']) and row['Job Function 2'] and row['Hours Worked 2'] > 0:
             records.append({
@@ -82,7 +82,7 @@ if not df.empty:
                 'Employee': row['Employee'],
                 'Project/Site': row['Project/Site'],
                 'Job Function': row['Job Function 2'],
-                'Hours Worked': row['Hours Worked 2']
+                'Hours Worked': float(row['Hours Worked 2'])
             })
         if pd.notna(row['Travel Time']) and row['Travel Time'] > 0:
             records.append({
@@ -90,13 +90,20 @@ if not df.empty:
                 'Employee': row['Employee'],
                 'Project/Site': row['Project/Site'],
                 'Job Function': 'Travel Time',
-                'Hours Worked': row['Travel Time']
+                'Hours Worked': float(row['Travel Time'])
             })
     report_df = pd.DataFrame(records)
+    
+    # Format for display (string, always two decimals)
+    report_df["Hours Worked"] = report_df["Hours Worked"].map(lambda x: f"{x:.2f}")
     st.dataframe(report_df)
-
+    
+    # Format for Excel (float, rounded to two decimals)
+    report_df_excel = report_df.copy()
+    report_df_excel["Hours Worked"] = report_df_excel["Hours Worked"].astype(float).round(2)
+    
     output = io.BytesIO()
-    report_df.to_excel(output, index=False, engine='openpyxl')
+    report_df_excel.to_excel(output, index=False, engine='openpyxl')
     output.seek(0)
     st.download_button(
         label="Download Report as Excel",
