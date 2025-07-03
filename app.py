@@ -5,7 +5,6 @@ from datetime import date
 
 DATA_FILE = 'timesheet_data.xlsx'
 
-# Helper to load or create the data file
 def load_data():
     try:
         df = pd.read_excel(DATA_FILE)
@@ -26,14 +25,14 @@ st.title("Employee Time Tracking App")
 # --- Time Entry Form ---
 st.header("Enter Time Worked")
 with st.form("entry_form"):
-    entry_date = st.date_input("Date", value=date.today())
-    employee = st.text_input("Employee Name")
-    project = st.text_input("Project/Site")
-    job1 = st.text_input("Job Function 1")
-    hours1 = st.number_input("Hours Worked 1", min_value=0.0, step=0.25)
-    job2 = st.text_input("Job Function 2 (optional)")
-    hours2 = st.number_input("Hours Worked 2 (optional)", min_value=0.0, step=0.25)
-    travel = st.number_input("Travel Time (hours)", min_value=0.0, step=0.25)
+    entry_date = st.date_input("Date", value=date.today(), key="entry_date")
+    employee = st.text_input("Employee Name", key="employee")
+    project = st.text_input("Project/Site", key="project")
+    job1 = st.text_input("Job Function 1", key="job1")
+    hours1 = st.number_input("Hours Worked 1", min_value=0.0, step=0.25, key="hours1")
+    job2 = st.text_input("Job Function 2 (optional)", key="job2")
+    hours2 = st.number_input("Hours Worked 2 (optional)", min_value=0.0, step=0.25, key="hours2")
+    travel = st.number_input("Travel Time (hours)", min_value=0.0, step=0.25, key="travel")
     submitted = st.form_submit_button("Submit Entry")
 
     if submitted:
@@ -48,17 +47,25 @@ with st.form("entry_form"):
             'Hours Worked 2': hours2,
             'Travel Time': travel
         }
-        # Use pd.concat instead of append (append is deprecated)
         df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
         save_data(df)
         st.success("Entry saved!")
+
+        # --- RESET FORM FIELDS ---
+        st.session_state["entry_date"] = date.today()
+        st.session_state["employee"] = ""
+        st.session_state["project"] = ""
+        st.session_state["job1"] = ""
+        st.session_state["hours1"] = 0.0
+        st.session_state["job2"] = ""
+        st.session_state["hours2"] = 0.0
+        st.session_state["travel"] = 0.0
 
 # --- Reporting Section ---
 st.header("Time Report")
 df = load_data()
 
 if not df.empty:
-    # Transform data to long format for reporting
     records = []
     for _, row in df.iterrows():
         if pd.notna(row['Job Function 1']) and row['Job Function 1'] and row['Hours Worked 1'] > 0:
@@ -88,7 +95,6 @@ if not df.empty:
     report_df = pd.DataFrame(records)
     st.dataframe(report_df)
 
-    # Download report as Excel using an in-memory buffer
     output = io.BytesIO()
     report_df.to_excel(output, index=False, engine='openpyxl')
     output.seek(0)
